@@ -7,11 +7,10 @@
       update_cache: yes
     when: ansible_distribution == "Ubuntu"
 
-- name: Install wireshark
-  hosts: all
-  roles:
-    - install_wireshark_from_local
-  when: ansible_os_family == "Windows"
+# - name: Install wireshark
+#   hosts: windows
+#   roles:
+#     - install_wireshark_from_local
 
 - name: Preparing Windows for Chocolatey
   hosts: windows
@@ -19,18 +18,8 @@
     - install_chocolatey
     # - install_ninite
     # - darkwizard242.googlechrome
-  # when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+  #when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
 
-# - name: Installing software for Linux hosts
-#   hosts: linux  
-#   roles:
-#     - darkwizard242.googlechrome
-
-# - name: Install software on windows hosts
-#   hosts: windows
-#   roles:
-#   - install_googlechrome
-  
 - hosts: windows
   tasks:
   - name: Disable Windows Updates Service
@@ -39,101 +28,22 @@
       state: stopped
     when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
 
-
-
-## Daz adding Desktop change
-
-
-  # Daz adding Desktop change
-  - name: Uploading the wallpaper to the c:\Users\Public\Pictures directory
-    ansible.windows.win_copy:  # Fully qualified module name
-      src: new-desktop.jpg
-      dest: C:\Users\Public\Pictures\new-desktop.jpg
-      remote_src: no
-
-  - name: Update the registry to set the wallpaper
-    # ansible.windows.win_regedit:
-    #   path: 'HKCU\Control Panel\Desktop'  # Correctly formatted registry path
-    #   name: Wallpaper
-    #   type: string
-    #   data: C:\Users\Public\Pictures\new-desktop.jpg
-    #   state: present
-
-
-      # this was c:\Windows\web\wallpaper\Windows\img0.jpg
-
-
-    win_shell: |
-      $path = "C:\Users\Public\Pictures\new-desktop.jpg"
-      $regPath = "HKCU:\Control Panel\Desktop"
-      Set-ItemProperty -Path $regPath -Name Wallpaper -Value $path
-      Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
-      Set-ItemProperty -Path $regPath -Name TileWallpaper -Value 0
-      RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
-
-      
-  # - name: Refresh the wallpaper setting
-  #   win_sh # - name: Set the wallpaperell: |
-  #     RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
-  # - name: Set wallpaper style (0=Center, 2=Stretch, 6=Fill, 10=Span) 
-  #     Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
-
-
-    # - name: Copy desktop.jpg to the target server
-    #   win_copy:
-    #     src: desktop.jpg
-    #     dest: C:\Users\Public\Pictures\desktop.jpg
-    #     remote_src: no
-
-    # - name: Update the registry to set the wallpaper
-    #   win_registry:
-    #     path: HKCU\Control Panel\Desktop
-    #     name: Wallpaper
-    #     data: C:\Users\Public\Pictures\desktop.jpg
-    #     type: string
-
-    # - name: Set wallpaper style (0=Center, 2=Stretch, 6=Fill, 10=Span)
-    #   win_registry:
-    #     path: HKCU\Control Panel\Desktop
-    #     name: WallpaperStyle
-    #     data: "2"  # "2" for Stretch, adjust if needed
-    #     type: string
-
-    # - name: Set wallpaper position (0=center, 1=tile, 2=stretch)
-    #   win_registry:
-    #     path: HKCU\Control Panel\Desktop
-    #     name: TileWallpaper
-    #     data: "0"  # "0" for no tiling, adjust if needed
-    #     type: string
-
-    # - name: Refresh the wallpaper setting
-    #   win_shell: |
-    #     RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
-
-
-
-    ######## END OF DAZ ADDING DESKTOP CHANGE ########
-
-- name: Database Servers
+- name: Configuring the database Servers
   hosts: db_servers
   roles:
     - install_mysql
 
-- name: nginx servers
+- name: Configuring the nginx servers
   hosts: web_servers:&linux
   roles:
     - install_nginx
     
-- name: iis Servers
+- name: Configuring the iis Servers
   hosts: web_servers:&windows
   roles:
     - install_iis
 
-- name: File Servers
+- name: Configuring the File Servers
   hosts: file_server
   roles:
     - file_server
-  
-  # apt:
-  #   update_cache: yes
-  # when: ansible_distribution == "Ubuntu"

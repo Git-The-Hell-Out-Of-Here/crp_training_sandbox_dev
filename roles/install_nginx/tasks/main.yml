@@ -1,11 +1,11 @@
 ---
-- name: install nginx
+- name: Now installing nginx
   ansible.builtin.apt:
     name: nginx
     state: present
   when: ansible_distribution == "Ubuntu"
 
-- name: Create images directory
+- name: Create images directory for the nginx webserver
   ansible.builtin.file:
     path: "/var/www/html/images"
     state: directory
@@ -19,7 +19,7 @@
     mode: '0644'
   when: ansible_distribution == "Ubuntu"
 
-- name: Deploy custom index page
+- name: Deploy the custom index page
   ansible.builtin.template:
     src: default_site.html.j2
     dest: "/var/www/html/index.html"
