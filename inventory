@@ -32,3 +32,4 @@ ansible_shell_type=powershell
 [file_server]
 10.182.240.245
 10.182.240.251
+
