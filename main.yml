@@ -20,15 +20,15 @@
     # - darkwizard242.googlechrome
   # when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
 
-- name: Installing software for Linux hosts
-  hosts: linux  
-  roles:
-    - darkwizard242.googlechrome
+# - name: Installing software for Linux hosts
+#   hosts: linux  
+#   roles:
+#     - darkwizard242.googlechrome
 
-- name: Install software on windows hosts
-  hosts: windows
-  roles:
-  - install_googlechrome
+# - name: Install software on windows hosts
+#   hosts: windows
+#   roles:
+#   - install_googlechrome
   
 - hosts: windows
   tasks:
@@ -57,3 +57,64 @@
   hosts: file_server
   roles:
     - file_server
+
+
+## Daz adding Desktop change
+
+
+- name: Updating the Windows Desktop
+  hosts: Windows
+  tasks:
+  - name: Uploading the wallpaper to the c:\UserslPublic\Pictures directory
+    win_copy:
+      src: desktop.jpg
+      dest: C:\Users\Public\Pictures\desktop.jpg
+      remote_src: no
+  - name: Set the wallpaper
+    win_shell: |
+      $path = "C:\Users\Public\Pictures\desktop.jpg"
+      $regPath = "HKCU:\Control Panel\Desktop"
+      Set-ItemProperty -Path $regPath -Name Wallpaper -Value $path
+      Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
+      Set-ItemProperty -Path $regPath -Name TileWallpaper -Value 0
+      RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+  - name: Refresh the wallpaper setting
+    win_shell: |
+      RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+  - name: Set wallpaper style (0=Center, 2=Stretch, 6=Fill, 10=Span) 
+      Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
+
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+    # - name: Copy desktop.jpg to the target server
+    #   win_copy:
+    #     src: desktop.jpg
+    #     dest: C:\Users\Public\Pictures\desktop.jpg
+    #     remote_src: no
+
+    # - name: Update the registry to set the wallpaper
+    #   win_registry:
+    #     path: HKCU\Control Panel\Desktop
+    #     name: Wallpaper
+    #     data: C:\Users\Public\Pictures\desktop.jpg
+    #     type: string
+
+    # - name: Set wallpaper style (0=Center, 2=Stretch, 6=Fill, 10=Span)
+    #   win_registry:
+    #     path: HKCU\Control Panel\Desktop
+    #     name: WallpaperStyle
+    #     data: "2"  # "2" for Stretch, adjust if needed
+    #     type: string
+
+    # - name: Set wallpaper position (0=center, 1=tile, 2=stretch)
+    #   win_registry:
+    #     path: HKCU\Control Panel\Desktop
+    #     name: TileWallpaper
+    #     data: "0"  # "0" for no tiling, adjust if needed
+    #     type: string
+
+    # - name: Refresh the wallpaper setting
+    #   win_shell: |
+    #     RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
