@@ -7,10 +7,11 @@
       update_cache: yes
     when: ansible_distribution == "Ubuntu"
 
-# - name: Install wireshark
-#   hosts: windows
-#   roles:
-#     - install_wireshark_from_local
+- name: Install wireshark
+  hosts: all
+  roles:
+    - install_wireshark_from_local
+  when: ansible_os_family == "Windows"
 
 - name: Preparing Windows for Chocolatey
   hosts: windows
@@ -38,55 +39,45 @@
       state: stopped
     when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
 
-- name: Database Servers
-  hosts: db_servers
-  roles:
-    - install_mysql
-
-- name: nginx servers
-  hosts: web_servers:&linux
-  roles:
-    - install_nginx
-    
-- name: iis Servers
-  hosts: web_servers:&windows
-  roles:
-    - install_iis
-
-- name: File Servers
-  hosts: file_server
-  roles:
-    - file_server
 
 
 ## Daz adding Desktop change
 
 
-- name: Updating the Windows Desktop
-  hosts: Windows
-  tasks:
-  - name: Uploading the wallpaper to the c:\UserslPublic\Pictures directory
-    win_copy:
-      src: desktop.jpg
-      dest: C:\Users\Public\Pictures\desktop.jpg
+  # Daz adding Desktop change
+  - name: Uploading the wallpaper to the c:\Users\Public\Pictures directory
+    ansible.windows.win_copy:  # Fully qualified module name
+      src: new-desktop.jpg
+      dest: C:\Users\Public\Pictures\new-desktop.jpg
       remote_src: no
-  - name: Set the wallpaper
+
+  - name: Update the registry to set the wallpaper
+    # ansible.windows.win_regedit:
+    #   path: 'HKCU\Control Panel\Desktop'  # Correctly formatted registry path
+    #   name: Wallpaper
+    #   type: string
+    #   data: C:\Users\Public\Pictures\new-desktop.jpg
+    #   state: present
+
+
+      # this was c:\Windows\web\wallpaper\Windows\img0.jpg
+
+
     win_shell: |
-      $path = "C:\Users\Public\Pictures\desktop.jpg"
+      $path = "C:\Users\Public\Pictures\new-desktop.jpg"
       $regPath = "HKCU:\Control Panel\Desktop"
       Set-ItemProperty -Path $regPath -Name Wallpaper -Value $path
       Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
       Set-ItemProperty -Path $regPath -Name TileWallpaper -Value 0
       RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
-  - name: Refresh the wallpaper setting
-    win_shell: |
-      RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
-  - name: Set wallpaper style (0=Center, 2=Stretch, 6=Fill, 10=Span) 
-      Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
 
-    apt:
-      update_cache: yes
-    when: ansible_distribution == "Ubuntu"
+      
+  # - name: Refresh the wallpaper setting
+  #   win_sh # - name: Set the wallpaperell: |
+  #     RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+  # - name: Set wallpaper style (0=Center, 2=Stretch, 6=Fill, 10=Span) 
+  #     Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
+
 
     # - name: Copy desktop.jpg to the target server
     #   win_copy:
@@ -118,3 +109,31 @@
     # - name: Refresh the wallpaper setting
     #   win_shell: |
     #     RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+
+
+
+    ######## END OF DAZ ADDING DESKTOP CHANGE ########
+
+- name: Database Servers
+  hosts: db_servers
+  roles:
+    - install_mysql
+
+- name: nginx servers
+  hosts: web_servers:&linux
+  roles:
+    - install_nginx
+    
+- name: iis Servers
+  hosts: web_servers:&windows
+  roles:
+    - install_iis
+
+- name: File Servers
+  hosts: file_server
+  roles:
+    - file_server
+  
+  # apt:
+  #   update_cache: yes
+  # when: ansible_distribution == "Ubuntu"

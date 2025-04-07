@@ -1,0 +1,42 @@
+---
+- hosts: all  # The playbook will run on all hosts in the inventory. If you want to run it on specific hosts or groups, modify this line (e.g., 'hosts: windows').
+
+  vars:
+    # Define the wallpaper filename and path as variables. This makes the playbook more flexible and reusable.
+    wallpaper_filename: "img0.jpg"  # The wallpaper filename, can easily be modified if the wallpaper changes.
+    wallpaper_path: "C:\\Windows\\web\\wallpaper\\Windows"  # The path where the wallpaper is stored on the Windows machine.
+
+  tasks:
+    # Task 1: Restore the original wallpaper
+    - name: Restore the original wallpaper
+      win_shell: |  # The 'win_shell' module allows running shell commands on Windows hosts (in this case, PowerShell commands).
+        $path = "{{ wallpaper_path}}\\{{ wallpaper_filename }}"  # Combine the wallpaper path and filename to get the full file path.
+        $regPath = "HKCU:\Control Panel\Desktop"  # The registry path that controls desktop wallpaper settings in Windows.
+        
+        # Update the registry to point to the original wallpaper image.
+        # *************************************************************
+        Set-ItemProperty -Path $regPath -Name Wallpaper -Value $path
+
+        
+        # Set wallpaper style. The value '0' means no tiling (so the wallpaper will not be repeated across the screen).
+        # ***************************************************************************************************************
+        Set-ItemProperty -Path $regPath -Name TileWallpaper -Value 0
+        
+        # Refresh the user interface to apply the new wallpaper without rebooting.
+        # *************************************************************************
+        RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+      when: ansible_os_family == "Windows"  # Ensure this task only runs on Windows hosts (checks the OS family).
+
+    # Task 2: Remove the wallpaper from the 'C:\Users\Public\Pictures' directory
+    - name: Remove the wallpaper from the C:\Users\Public\Pictures directory
+      ansible.windows.win_file:  # This module is used to manage files and directories on Windows hosts.
+        path: "C:\\Users\\Public\\Pictures"  # The path where the wallpaper is stored.
+        state: absent  # Ensures the directory and its contents are removed. This will delete any wallpapers stored there.
+      when: ansible_os_family == "Windows"  # This task only runs on Windows hosts.
+
+    # Task 3: Recreate the 'C:\Users\Public\Pictures' directory
+    - name: Recreate the pictures directory
+      win_file:  # Used to create or remove files and directories on Windows hosts.
+        path: "C:\\Users\\Public\\Pictures"  # The path to the directory we want to create.
+        state: directory  # Ensures the path is a directory. If it doesn’t exist, it will be created.
+      when: ansible_os_family == "Windows"  # This task only runs on Windows hosts.

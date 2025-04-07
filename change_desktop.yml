@@ -1,0 +1,47 @@
+---
+# This playbook is designed to upload and set a new desktop wallpaper on Windows machines.
+# It first uploads the wallpaper to the target machine and then updates the desktop settings via the registry.
+
+- hosts: all  # This playbook applies to all hosts defined in your Ansible inventory. You can replace 'all' with a specific group if needed (e.g., 'windows_machines').
+
+  vars:
+    # Define variables for the wallpaper to be used. This makes the playbook reusable and easily configurable.
+    wallpaper_filename: "new-desktop.jpg"  # The name of the wallpaper file to be uploaded.
+
+  tasks:
+    # Task 1: Upload the wallpaper to the specified directory on Windows hosts
+    - name: Uploading the wallpaper to the c:\Users\Public\Pictures directory
+      ansible.windows.win_copy:  # The 'win_copy' module is used to copy files from the local machine (Ansible control machine) to the target Windows machine.
+        src: "{{ wallpaper_filename }}"  # Use the 'wallpaper_filename' variable for the source file on the local machine.
+        dest: C:\Users\Public\Pictures\{{ wallpaper_filename }}  # Use the same variable for the destination path on the Windows machine.
+        remote_src: no  # Set to 'no' because the source file is local to the Ansible controller, not already on the remote machine.
+      when: ansible_os_family == "Windows"  # This condition ensures the task only runs on Windows hosts. The condition checks the gathered OS family.
+
+    # Task 2: Set the desktop wallpaper using PowerShell commands
+    - name: Set desktop wallpaper using PowerShell
+      win_shell: |  # The 'win_shell' module allows running PowerShell or shell commands on Windows hosts.
+        # Define the full path to the wallpaper by combining the directory path and the filename variable.
+        # *************************************************************************************************
+        $path = "C:\Users\Public\Pictures\{{ wallpaper_filename }}"  
+        
+        # Define the registry path where wallpaper settings are stored in Windows (the "Control Panel\Desktop" registry path).
+        # *********************************************************************************************************************
+        $regPath = "HKCU:\Control Panel\Desktop"
+        
+        # Modify the registry to update the wallpaper setting.
+        # ***************************************************
+        Set-ItemProperty -Path $regPath -Name Wallpaper -Value $path
+        
+        # Set the wallpaper style (2 means 'Fill' the screen).
+        # ****************************************************
+        Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
+
+        # Set the tile wallpaper option to '0' (no tiling of the wallpaper image).
+        # ************************************************************************
+        Set-ItemProperty -Path $regPath -Name TileWallpaper -Value 0
+        
+        # The following command applies the wallpaper change immediately without requiring a restart.
+        # *******************************************************************************************
+        RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+      when: ansible_os_family == "Windows"  # This condition ensures the task only runs on Windows hosts (platform-specific execution).
+
