@@ -1,0 +1,59 @@
+---
+
+- hosts: linux
+  tasks:
+  - name: update repository index
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+# - name: Install wireshark
+#   hosts: windows
+#   roles:
+#     - install_wireshark_from_local
+
+- name: Preparing Windows for Chocolatey
+  hosts: windows
+  roles:
+    - install_chocolatey
+    # - install_ninite
+    # - darkwizard242.googlechrome
+  # when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+- name: Installing software for Linux hosts
+  hosts: linux  
+  roles:
+    - darkwizard242.googlechrome
+
+- name: Install software on windows hosts
+  hosts: windows
+  roles:
+  - install_googlechrome
+  
+- hosts: windows
+  tasks:
+  - name: Disable Windows Updates Service
+    win_service:
+      name: wuauserv
+      state: stopped
+    when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+- name: Database Servers
+  hosts: db_servers
+  roles:
+    - install_mysql
+
+- name: nginx servers
+  hosts: web_servers:&linux
+  roles:
+    - install_nginx
+    
+- name: iis Servers
+  hosts: web_servers:&windows
+  roles:
+    - install_iis
+
+- name: File Servers
+  hosts: file_server
+  roles:
+    - file_server

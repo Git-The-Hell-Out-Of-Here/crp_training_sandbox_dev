@@ -1,0 +1,4 @@
+---
+# vars file for file_server
+file_share_username: share
+file_share_password: Cool2Pass

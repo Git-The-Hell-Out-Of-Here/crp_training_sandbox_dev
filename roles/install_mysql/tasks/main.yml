@@ -1,0 +1,17 @@
+---
+- name: Install MySQL package
+  ansible.builtin.apt:
+    name: mysql-server
+    state: present
+
+- name: Start MySQL service
+  ansible.builtin.service:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Configure MySQL
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: /etc/mysql/my.cnf
+  notify: restart mysql

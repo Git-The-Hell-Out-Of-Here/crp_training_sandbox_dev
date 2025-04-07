@@ -1,0 +1,14 @@
+---
+
+- hosts: linux
+  tasks:
+  - name: update repository index
+    apt:
+      update_cache: yes
+
+- hosts: web_servers:&linux
+  tasks:
+  - name: install nginx
+    ansible.builtin.apt:
+      name: nginx
+      state: present

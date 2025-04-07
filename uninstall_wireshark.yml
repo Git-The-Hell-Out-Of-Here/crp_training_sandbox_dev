@@ -1,0 +1,19 @@
+---
+- name: Uninstall Wireshark on Windows
+  hosts: windows
+  gather_facts: yes
+  tasks:
+
+  - name: Uninstall Wireshark using win_package
+    win_package:
+      name: Wireshark
+      state: absent
+
+  - name: Check if Wireshark is uninstalled
+    win_stat:
+      path: C:\Program Files\Wireshark
+    register: result
+
+  - name: Display uninstallation result
+    debug:
+      var: result.stat.exists

@@ -1,0 +1,27 @@
+---
+- name: install IIS
+  ansible.windows.win_feature:
+    name: "Web-Server"
+    state: present
+    restart: yes
+    include_sub_features: yes
+    include_management_tools: yes
+  when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+- name: Copy index test page from template
+  ansible.windows.win_template:
+    src: default_site.html.j2
+    dest: "C:\\inetpub\\wwwroot\\index.html"
+  when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+- name: Create directory for images
+  ansible.windows.win_file:
+    path: C:\inetpub\wwwroot\images
+    state: directory
+  when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+- name: Copy a single file
+  ansible.windows.win_copy:
+    src: my_image.jpeg
+    dest: C:\inetpub\wwwroot\images
+  when: ansible_distribution == "Microsoft Windows Server 2022 Standard"

@@ -1,0 +1,11 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Download Google Chrome MSI
+  win_get_url:
+    url: "https://chromeenterprise.google/download/thank-you/?platform=WIN64_MSI&channel=stable"
+    dest: "C:\\Temp\\google-chrome.msi"
+
+- name: Install Google Chrome MSI
+  ansible.windows.win_package:
+    path: "C:\\Temp\\google-chrome.msi"
+    state: present

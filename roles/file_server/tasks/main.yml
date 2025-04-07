@@ -1,0 +1,23 @@
+---
+
+- name: Create directory structure
+  ansible.windows.win_file:
+    path: c:\Public
+    state: directory
+
+- name: Create a windows username and password to share the Public folder
+  ansible.windows.win_user:
+    name: '{{ file_share_username }}'
+    password: '{{ file_share_password }}'
+    description: Daz ansible lab for Public share
+    state: present
+    groups:
+      - Users
+
+- name: Add public share
+  ansible.windows.win_share:
+    name: '{{ file_share_username }}'
+    description: Public share
+    path: c:\Public
+    full: share
+    list: true

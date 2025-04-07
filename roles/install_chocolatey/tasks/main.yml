@@ -1,0 +1,44 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for install_chocolatey
+
+  - name: Install chocolatey
+    win_chocolatey:
+      name:
+      - chocolatey
+      - chocolatey-core.extension
+      state: present
+    when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+  # - name: Kill running Chrome processes
+  #   win_shell: 
+  #       Stop-Process -Name "chrome" -Force
+  #   ignore_errors: yes
+  #   when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+  # - name: Install chocolatey
+  #   win_chocolatey:
+  #     name:
+  #     - googlechrome
+  #     state: latest
+  #     ignore_checksums: yes
+  #   when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+  
+  # - name: Install a crazy amount of packages
+  #   win_chocolatey:
+  #     name:
+  #     # - procexp
+  #     # - putty
+  #     # - windirstat
+  #     # - notepadplusplus
+  #     # - 7zip
+  #     # - wireshark
+  #     # - googlechrome
+  #     # - firefox
+  #     # - vlc
+ #     # state: present
+      
+  #   when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+
+  

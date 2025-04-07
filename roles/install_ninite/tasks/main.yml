@@ -1,0 +1,75 @@
+
+# tasks file for install_ninite
+---
+
+
+- name: Copy Ninite installer to the remote host
+  win_copy:
+    src: Ninite-7Zip-Chrome-Python3.exe   # Path to the installer on the control machine
+    dest: C:\Temp\Ninite-7Zip-Chrome-Python3.exe         # Destination path on the remote machine
+
+- name: Install Ninite silently
+  win_command: C:\Temp\Ninite-7Zip-Chrome-Python3.exe /S
+  args:
+    creates: C:\Temp\Ninite-7Zip-Chrome-Python3.exe  # Prevents reinstallation if 7-Zip is already installed
+# - name: Reboot the system
+#   win_reboot:
+#     reboot_timeout: 600  # Timeout in seconds to wait for the system to reboot and become available
+#     test_command: echo hello
+    
+- name: Remove read-only and system attributes
+  win_command: "attrib -r -s C:\\Temp\\Ninite-7Zip-Chrome-Python3.exe"
+  # becomes: yes
+  # become_method: runas
+  # become_user: SYSTEM
+
+- name: Remove the installer after installation
+  win_file:
+    path: C:\Temp\Ninite-7Zip-Chrome-Python3.exe
+    state: absent
+    becomes: yes
+    become_method: runas
+    become_user: SYSTEM
+
+# - name: Remove the installer after installation
+#   win_file:
+#     path: C:\Temp\Ninite-7Zip-Chrome-Python3.exe
+#     state: absent
+#     becomes: yes
+#     become_method: runas
+#     become_user: SYSTEM
+
+# - name: Uninstall 7zip
+#   ansible.windows.win_package:
+#     product_id: 7-Zip
+#     arguments: /S
+#     state: absent
+
+# - name: Uninstall Firefox
+#   ansible.windows.win_package:
+#     product_id: Firefox
+#     arguments: /S
+#     state: absent
+
+- name: Uninstall Notepad++
+  ansible.windows.win_package:
+    product_id: Notepad++
+    arguments: /S
+    state: absent
+
+# - name: Uninstall Wireshark  
+#   ansible.windows.win_package:
+#     product_id: Wireshark
+#     arguments: /S
+#     state: absent
+
+# - name: Uninstall Google Chrome
+#   ansible.windows.win_package:
+#     product_id: Google Chrome
+#     arguments: /S
+#     state: absent
+
+# - name: Uninstall Notepad++
+#   win_package:
+#     name: "Notepad++"
+#     state: absent

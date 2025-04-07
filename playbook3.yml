@@ -1,0 +1,74 @@
+---
+
+- hosts: linux
+  tasks:
+  - name: update repository index
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: windows
+  tasks:
+  - name: Disable Windows Updates Service
+    win_service:
+      name: wuauserv
+      state: stopped
+    when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+- hosts: web_servers:&linux
+  tasks:
+  - name: install nginx
+    ansible.builtin.apt:
+      name: nginx
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Create images directory
+    ansible.builtin.file:
+      path: "/var/www/html/images"
+      state: directory
+      mode: '0755'
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Upload image to webserver
+    ansible.builtin.copy:
+      src: my_image.jpeg
+      dest: "/var/www/html/images/my_image.jpg"
+      mode: '0644'
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Deploy custom index page
+    ansible.builtin.template:
+      src: default_site.html.j2
+      dest: "/var/www/html/index.html"
+      mode: '0644'
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: web_servers:&windows
+  tasks:
+  - name: install IIS
+    ansible.windows.win_feature:
+      name: "Web-Server"
+      state: present
+      restart: yes
+      include_sub_features: yes
+      include_management_tools: yes
+    when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+  - name: Copy index test page from template
+    ansible.windows.win_template:
+      src: default_site.html.j2
+      dest: "C:\\inetpub\\wwwroot\\index.html"
+    when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+  - name: Create directory for images
+    ansible.windows.win_file:
+      path: C:\inetpub\wwwroot\images
+      state: directory
+    when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
+
+  - name: Copy a single file
+    ansible.windows.win_copy:
+      src: my_image.jpeg
+      dest: C:\inetpub\wwwroot\images
+    when: ansible_distribution == "Microsoft Windows Server 2022 Standard"
