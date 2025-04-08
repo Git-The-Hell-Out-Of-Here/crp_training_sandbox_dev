@@ -44,4 +44,3 @@
         # *******************************************************************************************
         RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
       when: ansible_os_family == "Windows"  # This condition ensures the task only runs on Windows hosts (platform-specific execution).
-

@@ -40,3 +40,6 @@
         path: "C:\\Users\\Public\\Pictures"  # The path to the directory we want to create.
         state: directory  # Ensures the path is a directory. If it doesn’t exist, it will be created.
       when: ansible_os_family == "Windows"  # This task only runs on Windows hosts.
+
+
+      
