@@ -43,4 +43,7 @@
         # The following command applies the wallpaper change immediately without requiring a restart.
         # *******************************************************************************************
         RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+
+        # Forcing the wallpaper to refresh on the desktop.
+        gpupdate /force  # This command forces a refresh of the Group Policy settings, which can help apply the wallpaper change immediately.
       when: ansible_os_family == "Windows"  # This condition ensures the task only runs on Windows hosts (platform-specific execution).
