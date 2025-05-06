@@ -1,0 +1,26 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for add_users
+
+- name: Ensure user bob is present
+  ansible.windows.win_user:
+    name: bob
+    password: Cool2PassAround
+    state: absent
+    groups:
+      - Administrators
+
+  when: ansible_os_family == "Windows"
+
+
+- name: Add users from a CSV file
+  vars_files:
+    - realistic_users.csv
+  win_user:
+        name: "{{ item.username }}"
+        password: "{{ item.password }}"
+        fullname: "{{ item.fullname }}"
+        state: present
+        password_never_expires: yes
+        loop: realistic_users.csv
+  when: ansible_os_family == "Windows"

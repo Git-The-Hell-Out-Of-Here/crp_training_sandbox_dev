@@ -1,0 +1,38 @@
+---
+
+- hosts: windows
+
+
+# This playbook installs Chocolatey using the STE13 nexus repo as a proxy
+ 
+  tasks:
+
+    - name: Ensure Chocolatey installed from internal repo
+      chocolatey.chocolatey.win_chocolatey:
+        name: chocolatey
+        state: present
+        source: https://nexus.int.ste13.com/repository/files/choco/choco-install.ps1
+      register: choco_install
+
+    - name: Reboot the machine with all defaults
+      ansible.windows.win_reboot:
+      when: choco_install is changed
+
+    - name: Disable Chocolatey source
+      chocolatey.chocolatey.win_chocolatey_source:
+        name: chocolatey
+        state: disabled
+
+    - name: Add new internal source
+      chocolatey.chocolatey.win_chocolatey_source:
+        name: STE13
+        state: present
+        # source: https://nexus.int.ste13.com/repository/choco-proxy
+        source: https://nexus.int.ste13.com/service/rest/repository/browse/choco-proxy
+
+    - name: Install choco packages
+      chocolatey.chocolatey.win_chocolatey:
+        name:
+          - putty
+          - vlc
+        state: present

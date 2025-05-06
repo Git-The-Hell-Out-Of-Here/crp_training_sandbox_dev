@@ -47,3 +47,14 @@
   hosts: file_server
   roles:
     - file_server
+    
+- name: Adding Windows windows to server
+  hosts: windows
+  roles:
+    - add_users
+
+- name: Adding Linux users to server
+  hosts: linux
+  roles:
+    - add_users
+

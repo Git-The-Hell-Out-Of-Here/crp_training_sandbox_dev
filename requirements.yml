@@ -1,2 +1,5 @@
 collections: 
-  - ajholanda.googlechrome  #used to install Google Chrome
+- chocolatey.chocolatey # This will install the chocolatey collection
+
+
+# This can be installed using  "ansible-galaxy install -r requirements.yml"

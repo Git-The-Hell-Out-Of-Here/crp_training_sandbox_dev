@@ -6,7 +6,8 @@
 
   vars:
     # Define variables for the wallpaper to be used. This makes the playbook reusable and easily configurable.
-    wallpaper_filename: "new-desktop.jpg"  # The name of the wallpaper file to be uploaded.
+    wallpaper_filename: "argentina.jpg"  # The name of the wallpaper file to be uploaded.
+    remote_wallpaper_path: "/usr/share/backgrounds/{{ wallpaper_filename }}"  # The path on the remote machine where the wallpaper will be stored.}}"
 
   tasks:
     # Task 1: Upload the wallpaper to the specified directory on Windows hosts
@@ -47,3 +48,34 @@
         # Forcing the wallpaper to refresh on the desktop.
         gpupdate /force  # This command forces a refresh of the Group Policy settings, which can help apply the wallpaper change immediately.
       when: ansible_os_family == "Windows"  # This condition ensures the task only runs on Windows hosts (platform-specific execution).
+
+###### WIP
+
+    # - name: Ensure required packages are installed
+    #   apt:
+    #     name: "{{ item }}"
+    #     state: present
+    #     update_cache: yes
+    #   loop:
+    #     - wget
+    #     - xfconf
+
+    # - name: Upload the wallpaper to the remote machine
+    #   copy:
+    #     src: "{{ wallpaper_filename }}"
+    #     dest: "{{ remote_wallpaper_path }}"
+    #     mode: '0644'
+
+    # - name: Set GNOME wallpaper (for Ubuntu)
+    #   become_user: "{{ ansible_user }}"
+    #   when: "'ubuntu' in ansible_distribution | lower"
+    #   command: >
+    #     gsettings set org.gnome.desktop.background picture-uri 'file://{{ remote_wallpaper_path }}'
+
+    # - name: Set XFCE wallpaper (for Kali)
+    #   become_user: "{{ ansible_user }}"
+    #   when: "'kali' in ansible_distribution | lower"
+    #   shell: |
+    #     DISPLAY=:0 xfconf-query -c xfce4-desktop -l | grep last-image | while read line; do
+    #       xfconf-query -c xfce4-desktop -p "$line" -s "{{ remote_wallpaper_path }}"
+    #     done
