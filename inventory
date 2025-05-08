@@ -65,28 +65,26 @@ host_key_checking=False
 
 
 [i82_kali]
-10.1.48.[51:60]
-10.2.48.[51:60]
-10.3.48.[51:60]
-10.4.48.[51:60]
-10.5.48.[51:60]
+10.1.49.[51:60]
+10.2.49.[51:60]
+10.3.49.[51:60]
+10.4.49.[51:60]
+10.5.49.[51:60]
 
 [i82_kali:vars]
 ansible_user=root
 ansible_password=Cool2Pass
-#ansible_shell_type=bash
 host_key_checking=False
 
 [i82_linux]
-10.1.48.[81:89]
-10.2.48.[81:89]
-10.3.48.[81:89]
-10.4.48.[81:89]
-10.5.48.[81:89]
+10.1.49.[81:89]
+10.2.49.[81:89]
+10.3.49.[81:89]
+10.4.49.[81:89]
+10.5.49.[81:89]
 [i82_linux:vars]
 ansible_user=root
 ansible_password=Cool2Pass
-#ansible_shell_type=bash
 host_key_checking=False
 [i82:children]
 i82_win10
