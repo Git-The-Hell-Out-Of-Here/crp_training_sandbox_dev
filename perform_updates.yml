@@ -22,6 +22,6 @@
     ansible.builtin.apt:
       name: "*"
       state: latest
-    when: ansible_distribution == "Ubuntu"
+    when: ansible_os_family == "Windows"
 
     

@@ -3,7 +3,9 @@
 # It first uploads the wallpaper to the target machine and then updates the desktop settings via the registry.
 
 - hosts: all  # This playbook applies to all hosts defined in your Ansible inventory. You can replace 'all' with a specific group if needed (e.g., 'windows_machines').
+  serial: 2  # This option limits the number of hosts that are processed in parallel. In this case, it processes 2 hosts at a time.
 
+  
   vars:
     # Define variables for the wallpaper to be used. This makes the playbook reusable and easily configurable.
     wallpaper_filename: "new-desktop.jpg"  # The name of the wallpaper file to be uploaded.
@@ -17,6 +19,7 @@
         dest: C:\Users\Public\Pictures\{{ wallpaper_filename }}  # Use the same variable for the destination path on the Windows machine.
         remote_src: no  # Set to 'no' because the source file is local to the Ansible controller, not already on the remote machine.
       when: ansible_os_family == "Windows"  # This condition ensures the task only runs on Windows hosts. The condition checks the gathered OS family.
+
 
     # Task 2: Set the desktop wallpaper using PowerShell commands
     - name: Set desktop wallpaper using PowerShell
@@ -79,3 +82,9 @@
     #     DISPLAY=:0 xfconf-query -c xfce4-desktop -l | grep last-image | while read line; do
     #       xfconf-query -c xfce4-desktop -p "$line" -s "{{ remote_wallpaper_path }}"
     #     done
+
+
+# - name: Perform updates on all hosts
+#   hosts: all
+#   roles:
+#     - os_update  # This role is responsible for performing OS updates. It will be executed on all hosts defined in the inventory.

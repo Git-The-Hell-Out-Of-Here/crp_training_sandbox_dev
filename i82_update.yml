@@ -1,0 +1,56 @@
+---
+
+- hosts: linux
+  tasks:
+  - name: update repository index
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+# Now to add the roles
+- hosts: all
+  become: true
+  roles:
+    - base
+
+- hosts: workstations
+  become: true
+  roles:
+    - workstations
+
+- hosts: db_servers
+  become: true
+  roles: 
+    - db_servers
+
+- hosts: web_servers
+  become: true
+  roles:
+    - web_servers
+
+- hosts: file_servers
+  become: true
+  roles:
+    - file_servers
+
+
+
+## Update the system packages
+# ---
+# - name: Update Ubuntu hosts
+#   hosts: ubuntu_hosts
+#   become: yes
+#   roles:
+#     - os_update
+
+# - name: Update Windows hosts
+#   hosts: windows_hosts
+#   become: yes
+#   roles:
+#     - os_update
+
+- name: Update all hosts
+  hosts: all
+  become: yes
+  roles:
+    - os_update
