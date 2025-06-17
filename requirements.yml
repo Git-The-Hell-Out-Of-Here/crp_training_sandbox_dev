@@ -1,5 +1,7 @@
 collections: 
 - chocolatey.chocolatey # This will install the chocolatey collection
+- ansible.windows community.general #Used for reading CSVs for install user accounts
+
 
 
 # This can be installed using  "ansible-galaxy install -r requirements.yml"

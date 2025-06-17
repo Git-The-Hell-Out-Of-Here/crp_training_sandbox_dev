@@ -3,14 +3,14 @@
 # It first uploads the wallpaper to the target machine and then updates the desktop settings via the registry.
 
 - hosts: all  # This playbook applies to all hosts defined in your Ansible inventory. You can replace 'all' with a specific group if needed (e.g., 'windows_machines').
-  serial: 2  # This option limits the number of hosts that are processed in parallel. In this case, it processes 2 hosts at a time.
+ # serial: 2  # This option limits the number of hosts that are processed in parallel. In this case, it processes 2 hosts at a time.
 
   
   vars:
     # Define variables for the wallpaper to be used. This makes the playbook reusable and easily configurable.
     wallpaper_filename: "new-desktop.jpg"  # The name of the wallpaper file to be uploaded.
     remote_wallpaper_path: "/usr/share/backgrounds/{{ wallpaper_filename }}"  # The path on the remote machine where the wallpaper will be stored.}}"
-
+ 
   tasks:
     # Task 1: Upload the wallpaper to the specified directory on Windows hosts
     - name: Uploading the wallpaper to the c:\Users\Public\Pictures directory
