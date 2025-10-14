@@ -68,10 +68,6 @@ host_key_checking=False
 
 [i82_kali]
 10.[1:2].45.[41:50]
-ansible_user=root
-ansible_password=Cool2Pass
-host_key_checking=False
-
 
 [i82_kali:vars]
 ansible_user=root

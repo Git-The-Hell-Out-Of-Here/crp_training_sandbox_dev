@@ -117,86 +117,112 @@
 #     - debug:
 #         msg: "Current wallpaper is: {{ wallpaper_check.stdout }}"
 
-- name: Upload and set desktop wallpaper on Linux (GNOME or XFCE)
-  hosts: all
+          # - name: Upload and set desktop wallpaper on Linux (GNOME or XFCE)
+          #   hosts: all
+          #   become: yes
+          #   vars:
+          #     wallpaper_source: "new-desktop.jpg"
+          #     wallpaper_dest: "/usr/share/backgrounds/custom_wallpaper.png"
+          #     user_name: "root"  # <-- change if your desktop user differs
+
+          #   tasks:
+          #     - name: Copy wallpaper to the target machine
+          #       copy:
+          #         src: "{{ wallpaper_source }}"
+          #         dest: "{{ wallpaper_dest }}"
+          #         owner: "{{ user_name }}"
+          #         group: "{{ user_name }}"
+          #         mode: '0644'
+
+          #     - name: Detect current desktop environment
+          #       become: false
+          #       become_user: "{{ user_name }}"
+          #       shell: echo $XDG_CURRENT_DESKTOP
+          #       args:
+          #         executable: /bin/bash
+          #       register: desktop_env
+
+          #     - debug:
+          #         msg: "Detected desktop environment: {{ desktop_env.stdout }}"
+
+          #     # --- GNOME Handling -------------------------------------------------------
+          #     - name: Set wallpaper for GNOME
+          #       become: false
+          #       become_user: "{{ user_name }}"
+          #       shell: |
+          #         export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus"
+          #         export DISPLAY=:0
+          #         gsettings set org.gnome.desktop.background picture-uri "file://{{ wallpaper_dest }}"
+          #         gsettings set org.gnome.desktop.background picture-options 'zoom'
+          #       args:
+          #         executable: /bin/bash
+          #       when: "'GNOME' in desktop_env.stdout or 'Gnome' in desktop_env.stdout or 'ubuntu' in desktop_env.stdout"
+
+          #     # --- XFCE Handling --------------------------------------------------------
+          #     - name: Set wallpaper for XFCE
+          #       become: false
+          #       become_user: "{{ user_name }}"
+          #       shell: |
+          #         for prop in $(xfconf-query -c xfce4-desktop -l | grep last-image); do
+          #           xfconf-query -c xfce4-desktop -p "$prop" -s "{{ wallpaper_dest }}"
+          #         done
+          #       args:
+          #         executable: /bin/bash
+          #       when: "'XFCE' in desktop_env.stdout or 'Xfce' in desktop_env.stdout"
+
+          #     # --- Verification ---------------------------------------------------------
+          #     - name: Confirm wallpaper has been set (GNOME)
+          #       become: false
+          #       become_user: "{{ user_name }}"
+          #       shell: |
+          #         export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus"
+          #         export DISPLAY=:0
+          #         gsettings get org.gnome.desktop.background picture-uri
+          #       args:
+          #         executable: /bin/bash
+          #       register: wallpaper_check
+          #       when: "'GNOME' in desktop_env.stdout or 'Gnome' in desktop_env.stdout or 'ubuntu' in desktop_env.stdout"
+
+          #     - name: Confirm wallpaper has been set (XFCE)
+          #       become: false
+          #       become_user: "{{ user_name }}"
+          #       shell: |
+          #         xfconf-query -c xfce4-desktop -l | grep last-image | while read prop; do
+          #           echo "$prop: $(xfconf-query -c xfce4-desktop -p $prop)"
+          #         done
+          #       args:
+          #         executable: /bin/bash
+          #       register: xfce_wallpaper_check
+          #       when: "'XFCE' in desktop_env.stdout or 'Xfce' in desktop_env.stdout"
+
+          #     - name: Display final status
+          #       debug:
+          #         msg: |
+          #           GNOME wallpaper: {{ wallpaper_check.stdout | default('N/A') }}
+          #           XFCE wallpaper: {{ xfce_wallpaper_check.stdout | default('N/A') }}
+
+
+- name: Upload image and set Kali login background
+  hosts: i82_kali
   become: yes
   vars:
-    wallpaper_source: "new-desktop.jpg"
-    wallpaper_dest: "/usr/share/backgrounds/custom_wallpaper.png"
-    user_name: "root"  # <-- change if your desktop user differs
-
+    wallpaper_filename: "new-desktop.jpg"
+    remote_image_path: /usr/share/backgrounds/custom-kali-login.png
   tasks:
-    - name: Copy wallpaper to the target machine
+    - name: Upload local image to remote host
       copy:
-        src: "{{ wallpaper_source }}"
-        dest: "{{ wallpaper_dest }}"
-        owner: "{{ user_name }}"
-        group: "{{ user_name }}"
+        src: "{{ wallpaper_filename }}"     # path relative to playbook or full local path
+        dest: "{{ remote_image_path }}"
+        owner: root
+        group: root
         mode: '0644'
 
-    - name: Detect current desktop environment
-      become: false
-      become_user: "{{ user_name }}"
-      shell: echo $XDG_CURRENT_DESKTOP
-      args:
-        executable: /bin/bash
-      register: desktop_env
+    - name: Create symlink for the login background
+      file:
+        src: "{{ remote_image_path }}"
+        dest: /usr/share/desktop-base/kali-theme/login/background
+        state: link
+        force: yes
 
-    - debug:
-        msg: "Detected desktop environment: {{ desktop_env.stdout }}"
 
-    # --- GNOME Handling -------------------------------------------------------
-    - name: Set wallpaper for GNOME
-      become: false
-      become_user: "{{ user_name }}"
-      shell: |
-        export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus"
-        export DISPLAY=:0
-        gsettings set org.gnome.desktop.background picture-uri "file://{{ wallpaper_dest }}"
-        gsettings set org.gnome.desktop.background picture-options 'zoom'
-      args:
-        executable: /bin/bash
-      when: "'GNOME' in desktop_env.stdout or 'Gnome' in desktop_env.stdout or 'ubuntu' in desktop_env.stdout"
 
-    # --- XFCE Handling --------------------------------------------------------
-    - name: Set wallpaper for XFCE
-      become: false
-      become_user: "{{ user_name }}"
-      shell: |
-        for prop in $(xfconf-query -c xfce4-desktop -l | grep last-image); do
-          xfconf-query -c xfce4-desktop -p "$prop" -s "{{ wallpaper_dest }}"
-        done
-      args:
-        executable: /bin/bash
-      when: "'XFCE' in desktop_env.stdout or 'Xfce' in desktop_env.stdout"
-
-    # --- Verification ---------------------------------------------------------
-    - name: Confirm wallpaper has been set (GNOME)
-      become: false
-      become_user: "{{ user_name }}"
-      shell: |
-        export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus"
-        export DISPLAY=:0
-        gsettings get org.gnome.desktop.background picture-uri
-      args:
-        executable: /bin/bash
-      register: wallpaper_check
-      when: "'GNOME' in desktop_env.stdout or 'Gnome' in desktop_env.stdout or 'ubuntu' in desktop_env.stdout"
-
-    - name: Confirm wallpaper has been set (XFCE)
-      become: false
-      become_user: "{{ user_name }}"
-      shell: |
-        xfconf-query -c xfce4-desktop -l | grep last-image | while read prop; do
-          echo "$prop: $(xfconf-query -c xfce4-desktop -p $prop)"
-        done
-      args:
-        executable: /bin/bash
-      register: xfce_wallpaper_check
-      when: "'XFCE' in desktop_env.stdout or 'Xfce' in desktop_env.stdout"
-
-    - name: Display final status
-      debug:
-        msg: |
-          GNOME wallpaper: {{ wallpaper_check.stdout | default('N/A') }}
-          XFCE wallpaper: {{ xfce_wallpaper_check.stdout | default('N/A') }}
