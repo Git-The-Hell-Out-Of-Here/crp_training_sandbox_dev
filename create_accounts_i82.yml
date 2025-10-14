@@ -1,0 +1,29 @@
+---
+- hosts: management
+  gather_facts: false
+  tasks:
+    - name: Import csv
+      community.general.read_csv:
+        path: newusers.csv
+        delimiter: ','
+      register: users_list_csv
+      delegate_to: localhost
+
+    - name: Add users to DC (Linux example)
+      user:
+        name: "{{ item.username }}"
+        password: "{{ item.password | password_hash('sha512') }}"
+        state: present
+        groups:
+          - Users
+      loop: "{{ users_list_csv.list }}"
+      # when: ansible_os_family != 'Windows'
+      become: true
+
+    - name: Set an account expiration 30 days in the future (Windows example)
+      ansible.windows.win_user:
+        name: "{{ item.username }}"
+        state: present
+        account_expires: "{{ (ansible_date_time.epoch | int + 60*60*24*30) | strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+      loop: "{{ users_list_csv.list }}"
+      # when: ansible_os_family == 'Windows'

@@ -1,0 +1,202 @@
+---
+# ============================================================
+# Play 1: Windows — Upload and set desktop wallpaper
+# ============================================================
+
+- name: Upload and set Windows desktop wallpaper
+  hosts: all
+  vars:
+    wallpaper_filename: "new-desktop.jpg"
+    remote_wallpaper_path: "C:\\Users\\Public\\Pictures\\{{ wallpaper_filename }}"
+
+  tasks:
+    - name: Upload the wallpaper to Windows
+      ansible.windows.win_copy:
+        src: "{{ wallpaper_filename }}"
+        dest: "{{ remote_wallpaper_path }}"
+        remote_src: no
+      when: ansible_os_family == "Windows"
+
+    - name: Set desktop wallpaper using PowerShell
+      ansible.windows.win_shell: |
+        $path = "{{ remote_wallpaper_path }}"
+        $regPath = "HKCU:\Control Panel\Desktop"
+        Set-ItemProperty -Path $regPath -Name Wallpaper -Value $path
+        Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value 2
+        Set-ItemProperty -Path $regPath -Name TileWallpaper -Value 0
+        RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+        gpupdate /force
+      when: ansible_os_family == "Windows"
+
+# ============================================================
+# Play 2: Kali Linux — Upload and set GNOME wallpaper
+# ============================================================
+
+# - name: Change Kali Linux desktop wallpaper
+#   hosts: all
+#   become: yes
+#   vars:
+#     wallpaper_source: "new-desktop.jpg"
+#     wallpaper_dest: "/usr/share/backgrounds/custom_wallpaper.png"
+#     user_name: "root"
+
+#   tasks:
+#     - name: Copy wallpaper to the target machine
+#       copy:
+#         src: "{{ wallpaper_source }}"
+#         dest: "{{ wallpaper_dest }}"
+#         owner: "{{ user_name }}"
+#         group: "{{ user_name }}"
+#         mode: '0644'
+#       when: ansible_os_family == "Debian"
+#       # "ansible_nodename": "kali"
+
+#     - name: Set GNOME wallpaper for the user
+#       become: true
+#       become_user: "{{ user_name }}"
+#       shell: |
+#         DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus" \
+#         gsettings set org.gnome.desktop.background picture-uri "file://{{ wallpaper_dest }}"
+#       environment:
+#         DISPLAY: ":0"
+
+#     - name: Confirm wallpaper has been set
+#       become: true
+#       become_user: "{{ user_name }}"
+#       shell: |
+#         DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus" \
+#         gsettings get org.gnome.desktop.background picture-uri
+#       register: wallpaper_check
+#       when: ansible_os_family == "Debian" 
+
+#     - debug:
+#         msg: "Current wallpaper is: {{ wallpaper_check.stdout }}"
+
+# - name: Change Kali Linux desktop wallpaper
+#   hosts: all
+#   become: yes
+#   vars:
+#     wallpaper_source: "new-desktop.jpg"
+#     wallpaper_dest: "/usr/share/backgrounds/custom_wallpaper.png"
+#     user_name: "root"  # change to the actual desktop user
+
+#   tasks:
+#     - name: Copy wallpaper to the target machine
+#       copy:
+#         src: "{{ wallpaper_source }}"
+#         dest: "{{ wallpaper_dest }}"
+#         owner: "{{ user_name }}"
+#         group: "{{ user_name }}"
+#         mode: '0644'
+#       when: ansible_os_family == "Debian"
+
+#     - name: Set GNOME wallpaper for the logged-in user
+#       become: false
+#       become_user: "{{ user_name }}"
+#       shell: |
+#         export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus"
+#         export DISPLAY=:0
+#         gsettings set org.gnome.desktop.background picture-uri "file://{{ wallpaper_dest }}"
+#         gsettings set org.gnome.desktop.background picture-options 'zoom'
+#       args:
+#         executable: /bin/bash
+#       when: ansible_os_family == "Debian"
+
+#     - name: Confirm wallpaper has been set
+#       become: false
+#       become_user: "{{ user_name }}"
+#       shell: |
+#         export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus"
+#         export DISPLAY=:0
+#         gsettings get org.gnome.desktop.background picture-uri
+#       args:
+#         executable: /bin/bash
+#       register: wallpaper_check
+#       when: ansible_os_family == "Debian"
+
+#     - debug:
+#         msg: "Current wallpaper is: {{ wallpaper_check.stdout }}"
+
+- name: Upload and set desktop wallpaper on Linux (GNOME or XFCE)
+  hosts: all
+  become: yes
+  vars:
+    wallpaper_source: "new-desktop.jpg"
+    wallpaper_dest: "/usr/share/backgrounds/custom_wallpaper.png"
+    user_name: "root"  # <-- change if your desktop user differs
+
+  tasks:
+    - name: Copy wallpaper to the target machine
+      copy:
+        src: "{{ wallpaper_source }}"
+        dest: "{{ wallpaper_dest }}"
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        mode: '0644'
+
+    - name: Detect current desktop environment
+      become: false
+      become_user: "{{ user_name }}"
+      shell: echo $XDG_CURRENT_DESKTOP
+      args:
+        executable: /bin/bash
+      register: desktop_env
+
+    - debug:
+        msg: "Detected desktop environment: {{ desktop_env.stdout }}"
+
+    # --- GNOME Handling -------------------------------------------------------
+    - name: Set wallpaper for GNOME
+      become: false
+      become_user: "{{ user_name }}"
+      shell: |
+        export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus"
+        export DISPLAY=:0
+        gsettings set org.gnome.desktop.background picture-uri "file://{{ wallpaper_dest }}"
+        gsettings set org.gnome.desktop.background picture-options 'zoom'
+      args:
+        executable: /bin/bash
+      when: "'GNOME' in desktop_env.stdout or 'Gnome' in desktop_env.stdout or 'ubuntu' in desktop_env.stdout"
+
+    # --- XFCE Handling --------------------------------------------------------
+    - name: Set wallpaper for XFCE
+      become: false
+      become_user: "{{ user_name }}"
+      shell: |
+        for prop in $(xfconf-query -c xfce4-desktop -l | grep last-image); do
+          xfconf-query -c xfce4-desktop -p "$prop" -s "{{ wallpaper_dest }}"
+        done
+      args:
+        executable: /bin/bash
+      when: "'XFCE' in desktop_env.stdout or 'Xfce' in desktop_env.stdout"
+
+    # --- Verification ---------------------------------------------------------
+    - name: Confirm wallpaper has been set (GNOME)
+      become: false
+      become_user: "{{ user_name }}"
+      shell: |
+        export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u {{ user_name }})/bus"
+        export DISPLAY=:0
+        gsettings get org.gnome.desktop.background picture-uri
+      args:
+        executable: /bin/bash
+      register: wallpaper_check
+      when: "'GNOME' in desktop_env.stdout or 'Gnome' in desktop_env.stdout or 'ubuntu' in desktop_env.stdout"
+
+    - name: Confirm wallpaper has been set (XFCE)
+      become: false
+      become_user: "{{ user_name }}"
+      shell: |
+        xfconf-query -c xfce4-desktop -l | grep last-image | while read prop; do
+          echo "$prop: $(xfconf-query -c xfce4-desktop -p $prop)"
+        done
+      args:
+        executable: /bin/bash
+      register: xfce_wallpaper_check
+      when: "'XFCE' in desktop_env.stdout or 'Xfce' in desktop_env.stdout"
+
+    - name: Display final status
+      debug:
+        msg: |
+          GNOME wallpaper: {{ wallpaper_check.stdout | default('N/A') }}
+          XFCE wallpaper: {{ xfce_wallpaper_check.stdout | default('N/A') }}
