@@ -33,7 +33,7 @@ ansible_shell_type=powershell
 10.182.240.251
 
 [i82_win10]
-10.[1:2].45.[11:15]
+10.[1:1].45.[11:15]
 
 [i82_win10:vars]
 ansible_user=administrator
@@ -42,7 +42,7 @@ ansible_shell_type=powershell
 host_key_checking=False
 
 [i82_win11]
-10.[1:2].45.[21:25]
+10.[1:1].45.[21:25]
 
 [i82_win11:vars]
 ansible_user=administrator
@@ -57,7 +57,7 @@ i82_winsrv
 
 
 [i82_winsrv]
-10.[1:2].45.[2:3]
+10.[1:1].45.[2:3]
 
 
 [i82_winsrv:vars]
@@ -67,7 +67,7 @@ ansible_shell_type=powershell
 host_key_checking=False
 
 [i82_kali]
-10.[1:2].45.[41:50]
+10.[1:1].45.[41:50]
 
 [i82_kali:vars]
 ansible_user=root

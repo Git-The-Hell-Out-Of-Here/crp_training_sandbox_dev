@@ -42,3 +42,20 @@
       when: ansible_os_family == "Windows"  # This task only runs on Windows hosts.
 
       
+
+
+# ============================================================
+# Play 2: Kali Linux — Upload and set GNOME wallpaper
+# ============================================================
+
+
+- name: Reset Kali login wallpaper to default
+  hosts: i82_kali
+  become: yes
+  tasks:
+    - name: Point login background symlink to default image
+      file:
+        src: /usr/share/images/desktop-base/login-background.svg   # adjust if your default is different
+        dest: /usr/share/desktop-base/kali-theme/login/background
+        state: link
+        force: yes

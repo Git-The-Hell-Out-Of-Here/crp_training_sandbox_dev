@@ -221,6 +221,8 @@
       file:
         src: "{{ remote_image_path }}"
         dest: /usr/share/desktop-base/kali-theme/login/background
+
+
         state: link
         force: yes
 
